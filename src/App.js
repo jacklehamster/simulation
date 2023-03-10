@@ -405,8 +405,6 @@ function drawGraph9(context, funs, balls) {
       const {follows, color, fun1, fun2, fun3, fun4, fun5, getPos} = fun;
       context.beginPath();
       context.strokeStyle = color;
-//      let [px, py] = getPos(0);
-//      let [x, y] = [0, 0];//getPos(100 * speed);
       const [px, py] = cornerXY((time-100) * speed, fun, balls);
       const [x, y] = cornerXY(time * speed, fun, balls);
 
@@ -426,11 +424,12 @@ function drawGraph9(context, funs, balls) {
   raf = requestAnimationFrame(f);
 }
 
+let mouse = null;
 function App() {
   const count = 10;
-  const canvasRef = useRef(null)
+  const canvasRef = useRef(null);
+  const mouseRef = useRef(null);
   const [graph, selectGraph] = useState("graph2");
-  const [mouse, setMouse] = useState();
   const [population, setPopulation] = useState(createPopulation(1000, count));
   const [balls, setBalls] = useState([]);
   const newPopulation = useCallback(() => {
@@ -477,7 +476,11 @@ function App() {
           }
           const pos = [e.pageX / canvas.width, e.pageY / canvas.height];
           if (e.type === "mousemove") {
-            setMouse(pos);
+            mouse = pos;
+            if (mouseRef.current) {
+              mouseRef.current.style.left = `${mouse[0] * canvasRef.current.width - 30 / 2}px`;
+              mouseRef.current.style.top = `${mouse[1] * canvasRef.current.height - 30 / 2}px`;  
+            }
           } else if (e.type === "click") {
             setBalls((balls) => [...balls, {
               pos,
@@ -493,9 +496,9 @@ function App() {
         }  
       }
     } else {
-      setMouse(undefined);
+      mouse = null;
     }
-  }, [graph, canvasRef]);
+  }, [graph, canvasRef, mouseRef]);
 
   return (
     <div className="App">
@@ -525,13 +528,11 @@ function App() {
           display: "block",
         }}></div></div></>}
       </div>
-      {mouse && <div style={{
+      {mouse && <div ref={mouseRef} style={{
         borderRadius: "50%", borderColor: "#7df", width: 30, height: 30,
         borderStyle: "solid",
         borderWidth: 2,
         position: "fixed",
-        left: mouse[0] * canvasRef.current.width - 30 / 2,
-        top: mouse[1] * canvasRef.current.height - 30 / 2,
         pointerEvents: "none",
         }}></div>}
       <canvas id="canvas" ref={canvasRef} width={window.innerWidth} height={window.innerHeight}
